@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContentSpy</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🔍</span>
+                <h1>ContentSpy</h1>
+            </div>
+            <button class="settings-btn" id="settingsBtn" title="Open Dashboard">
+                <span>⚙️</span>
+            </button>
+        </header>
+
+        <!-- Add Competitor Section -->
+        <section class="add-competitor">
+            <h2>Add Competitor</h2>
+            <form id="addCompetitorForm">
+                <div class="input-group">
+                    <input 
+                        type="url" 
+                        id="competitorUrl" 
+                        placeholder="Enter competitor website URL"
+                        required
+                    >
+                    <input 
+                        type="text" 
+                        id="competitorLabel" 
+                        placeholder="Label (optional)"
+                        maxlength="50"
+                    >
+                </div>
+                <button type="submit" class="add-btn">
+                    <span class="btn-icon">+</span>
+                    Add Competitor
+                </button>
+            </form>
+        </section>
+
+        <!-- Competitors List -->
+        <section class="competitors-section">
+            <div class="section-header">
+                <h2>Tracked Competitors</h2>
+                <span class="competitor-count" id="competitorCount">0</span>
+            </div>
+            
+            <div class="competitors-list" id="competitorsList">
+                <!-- Competitors will be dynamically inserted here -->
+            </div>
+
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">📊</div>
+                <p>No competitors tracked yet</p>
+                <p class="empty-subtitle">Add your first competitor above to get started</p>
+            </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="recent-activity">
+            <h2>Recent Activity</h2>
+            <div class="activity-list" id="activityList">
+                <div class="activity-item">
+                    <div class="activity-icon">📝</div>
+                    <div class="activity-content">
+                        <p class="activity-text">Welcome to ContentSpy!</p>
+                        <span class="activity-time">Just now</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Actions -->
+        <footer class="footer">
+            <button class="footer-btn" id="dashboardBtn">
+                <span>📊</span>
+                Dashboard
+            </button>
+            <button class="footer-btn" id="refreshBtn">
+                <span>🔄</span>
+                Refresh All
+            </button>
+        </footer>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="competitorTemplate">
+        <div class="competitor-item" data-url="">
+            <div class="competitor-info">
+                <div class="competitor-header">
+                    <span class="competitor-name"></span>
+                    <div class="competitor-actions">
+                        <button class="toggle-btn active" title="Toggle monitoring">
+                            <span class="toggle-icon">👁️</span>
+                        </button>
+                        <button class="delete-btn" title="Remove competitor">
+                            <span class="delete-icon">🗑️</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="competitor-url"></div>
+                <div class="competitor-stats">
+                    <span class="stat">
+                        <span class="stat-icon">📄</span>
+                        <span class="stat-value">0</span> posts
+                    </span>
+                    <span class="stat">
+                        <span class="stat-icon">⏰</span>
+                        <span class="stat-value">Never</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="popup.js"></script>
+</body>
+</html>
