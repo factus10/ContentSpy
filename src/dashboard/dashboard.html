@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContentSpy Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <span class="logo-icon">🔍</span>
+                    <h1>ContentSpy Dashboard</h1>
+                </div>
+                <div class="header-actions">
+                    <button class="header-btn" id="refreshAllBtn">
+                        <span>🔄</span>
+                        Refresh All
+                    </button>
+                    <button class="header-btn" id="exportBtn">
+                        <span>📊</span>
+                        Export Data
+                    </button>
+                    <button class="header-btn" id="settingsBtn">
+                        <span>⚙️</span>
+                        Settings
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Sidebar Navigation -->
+            <nav class="sidebar">
+                <ul class="nav-menu">
+                    <li class="nav-item active" data-section="overview">
+                        <span class="nav-icon">📊</span>
+                        Overview
+                    </li>
+                    <li class="nav-item" data-section="competitors">
+                        <span class="nav-icon">👥</span>
+                        Competitors
+                    </li>
+                    <li class="nav-item" data-section="content">
+                        <span class="nav-icon">📝</span>
+                        Content Feed
+                    </li>
+                    <li class="nav-item" data-section="analytics">
+                        <span class="nav-icon">📈</span>
+                        Analytics
+                    </li>
+                    <li class="nav-item" data-section="activity">
+                        <span class="nav-icon">🕒</span>
+                        Activity Log
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Overview Section -->
+                <section class="content-section active" id="overview">
+                    <div class="section-header">
+                        <h2>Overview</h2>
+                        <p class="section-subtitle">Monitor your competitor landscape at a glance</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-content">
+                                <h3 id="totalCompetitors">0</h3>
+                                <p>Total Competitors</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📝</div>
+                            <div class="stat-content">
+                                <h3 id="totalContent">0</h3>
+                                <p>Content Items</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📈</div>
+                            <div class="stat-content">
+                                <h3 id="todayContent">0</h3>
+                                <p>Today's Content</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-content">
+                                <h3 id="activeMonitoring">0</h3>
+                                <p>Active Monitoring</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Content Activity (Last 7 Days)</h3>
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Top Performers</h3>
+                            <canvas id="competitorChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Content -->
+                    <div class="recent-content-card">
+                        <h3>Latest Content</h3>
+                        <div class="content-list" id="recentContentList">
+                            <!-- Dynamic content will be inserted here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Competitors Section -->
+                <section class="content-section" id="competitors">
+                    <div class="section-header">
+                        <h2>Competitor Management</h2>
+                        <button class="primary-btn" id="addCompetitorBtn">
+                            <span>+</span>
+                            Add Competitor
+                        </button>
+                    </div>
+
+                    <!-- Competitors Table -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <div class="table-controls">
+                                <input type="search" id="competitorSearch" placeholder="Search competitors...">
+                                <select id="statusFilter">
+                                    <option value="all">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="paused">Paused</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="competitors-table">
+                                <thead>
+                                    <tr>
+                                        <th>Competitor</th>
+                                        <th>Status</th>
+                                        <th>Content Count</th>
+                                        <th>Last Check</th>
+                                        <th>Last Content</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="competitorsTableBody">
+                                    <!-- Dynamic rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Content Feed Section -->
+                <section class="content-section" id="content">
+                    <div class="section-header">
+                        <h2>Content Feed</h2>
+                        <div class="feed-controls">
+                            <select id="contentFilter">
+                                <option value="all">All Content</option>
+                                <option value="today">Today</option>
+                                <option value="week">This Week</option>
+                                <option value="month">This Month</option>
+                            </select>
+                            <select id="competitorFilter">
+                                <option value="all">All Competitors</option>
+                                <!-- Dynamic options will be added -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="content-feed" id="contentFeed">
+                        <!-- Dynamic content items will be inserted here -->
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section class="content-section" id="analytics">
+                    <div class="section-header">
+                        <h2>Analytics & Insights</h2>
+                        <div class="analytics-controls">
+                            <select id="analyticsTimeframe">
+                                <option value="7">Last 7 days</option>
+                                <option value="30">Last 30 days</option>
+                                <option value="90">Last 90 days</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>Publishing Frequency</h3>
+                            <canvas id="frequencyChart"></canvas>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Content Types</h3>
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Peak Publishing Times</h3>
+                            <canvas id="timeChart"></canvas>
+                        </div>
+                        <div class="analytics-card">
+                            <h3>Trending Topics</h3>
+                            <div class="topics-list" id="topicsList">
+                                <!-- Dynamic topics will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Activity Log Section -->
+                <section class="content-section" id="activity">
+                    <div class="section-header">
+                        <h2>Activity Log</h2>
+                        <button class="secondary-btn" id="clearActivityBtn">Clear All</button>
+                    </div>
+
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Dynamic activity items will be inserted here -->
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Competitor Modal -->
+    <div class="modal-overlay" id="addCompetitorModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Add New Competitor</h3>
+                <button class="modal-close" id="closeAddModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="addCompetitorForm">
+                    <div class="form-group">
+                        <label for="modalCompetitorUrl">Website URL</label>
+                        <input type="url" id="modalCompetitorUrl" required placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCompetitorLabel">Display Name</label>
+                        <input type="text" id="modalCompetitorLabel" placeholder="Competitor Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalCheckInterval">Check Interval</label>
+                        <select id="modalCheckInterval">
+                            <option value="15">Every 15 minutes</option>
+                            <option value="30" selected>Every 30 minutes</option>
+                            <option value="60">Every hour</option>
+                            <option value="120">Every 2 hours</option>
+                            <option value="360">Every 6 hours</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn" id="cancelAddBtn">Cancel</button>
+                        <button type="submit" class="primary-btn">Add Competitor</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close" id="closeSettingsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-sections">
+                    <div class="settings-section">
+                        <h4>Notifications</h4>
+                        <div class="setting-item">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="enableNotifications" checked>
+                                <span class="toggle-slider"></span>
+                                Enable notifications
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="notificationSound">
+                                <span class="toggle-slider"></span>
+                                Notification sound
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-section">
+                        <h4>Monitoring</h4>
+                        <div class="setting-item">
+                            <label for="defaultInterval">Default check interval</label>
+                            <select id="defaultInterval">
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
+                                <option value="60">1 hour</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h4>Data Management</h4>
+                        <div class="setting-item">
+                            <button class="secondary-btn" id="exportDataBtn">Export All Data</button>
+                            <button class="secondary-btn" id="importDataBtn">Import Data</button>
+                            <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                        </div>
+                        <div class="setting-item">
+                            <button class="danger-btn" id="clearAllDataBtn">Clear All Data</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn" id="cancelSettingsBtn">Cancel</button>
+                    <button type="button" class="primary-btn" id="saveSettingsBtn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Templates -->
+    <template id="competitorRowTemplate">
+        <tr class="competitor-row" data-id="">
+            <td class="competitor-info">
+                <div class="competitor-name"></div>
+                <div class="competitor-url"></div>
+            </td>
+            <td class="status-cell">
+                <span class="status-badge"></span>
+            </td>
+            <td class="content-count"></td>
+            <td class="last-check"></td>
+            <td class="last-content"></td>
+            <td class="actions-cell">
+                <button class="action-btn toggle-btn" title="Toggle monitoring">
+                    <span class="btn-icon">👁️</span>
+                </button>
+                <button class="action-btn edit-btn" title="Edit competitor">
+                    <span class="btn-icon">✏️</span>
+                </button>
+                <button class="action-btn delete-btn" title="Delete competitor">
+                    <span class="btn-icon">🗑️</span>
+                </button>
+            </td>
+        </tr>
+    </template>
+
+    <template id="contentItemTemplate">
+        <div class="content-item" data-id="">
+            <div class="content-header">
+                <div class="content-meta">
+                    <span class="competitor-badge"></span>
+                    <span class="content-date"></span>
+                </div>
+                <div class="content-actions">
+                    <button class="content-action" title="Open in new tab">
+                        <span>🔗</span>
+                    </button>
+                </div>
+            </div>
+            <div class="content-body">
+                <h4 class="content-title"></h4>
+                <p class="content-excerpt"></p>
+            </div>
+        </div>
+    </template>
+
+    <template id="activityItemTemplate">
+        <div class="activity-item" data-id="">
+            <div class="activity-icon"></div>
+            <div class="activity-content">
+                <div class="activity-text"></div>
+                <div class="activity-time"></div>
+            </div>
+        </div>
+    </template>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

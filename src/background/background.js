@@ -23,8 +23,7 @@ class ContentSpyBackground {
     }
 
     async loadStorageManager() {
-        // Import storage utility (simplified for background context)
-        // In a real implementation, you'd import the storage.js file
+        // Simplified storage for background context using both sync and local storage
         this.storage = {
             async getCompetitors() {
                 const result = await chrome.storage.sync.get(['competitors']);
@@ -43,7 +42,7 @@ class ContentSpyBackground {
             },
             
             async addActivity(activity) {
-                const result = await chrome.storage.sync.get(['recentActivity']);
+                const result = await chrome.storage.local.get(['recentActivity']);
                 const activities = result.recentActivity || [];
                 
                 activities.unshift({
@@ -57,11 +56,11 @@ class ContentSpyBackground {
                     activities.splice(100);
                 }
                 
-                await chrome.storage.sync.set({ recentActivity: activities });
+                await chrome.storage.local.set({ recentActivity: activities });
             },
             
             async addContent(content) {
-                const result = await chrome.storage.sync.get(['contentHistory']);
+                const result = await chrome.storage.local.get(['contentHistory']);
                 const contentHistory = result.contentHistory || [];
                 
                 contentHistory.unshift({
@@ -70,12 +69,12 @@ class ContentSpyBackground {
                     ...content
                 });
                 
-                // Keep only last 1000 content entries
-                if (contentHistory.length > 1000) {
-                    contentHistory.splice(1000);
+                // Keep only last 500 content entries
+                if (contentHistory.length > 500) {
+                    contentHistory.splice(500);
                 }
                 
-                await chrome.storage.sync.set({ contentHistory });
+                await chrome.storage.local.set({ contentHistory });
             }
         };
     }
@@ -107,6 +106,16 @@ class ContentSpyBackground {
             if (changeInfo.status === 'complete' && tab.url) {
                 this.checkIfMonitoredSite(tab);
             }
+        });
+
+        // Clean up orphaned monitoring processes
+        chrome.tabs.onRemoved.addListener((tabId) => {
+            console.log(`Tab ${tabId} was removed`);
+        });
+
+        // Handle extension errors
+        chrome.runtime.onSuspend.addListener(() => {
+            console.log('Extension is being suspended');
         });
     }
 
@@ -242,41 +251,54 @@ class ContentSpyBackground {
         const competitor = competitors.find(c => c.id === competitorId);
         
         if (!competitor || !competitor.isActive) {
+            console.log(`Skipping check for inactive/missing competitor ${competitorId}`);
             return;
         }
 
         console.log(`Checking content for ${competitor.label}`);
 
         try {
-            // Update last checked time
+            // Update last checked time first
             await this.storage.updateCompetitor(competitorId, {
                 lastChecked: new Date().toISOString()
             });
 
-            // Inject content script to check for new content
-            const [tab] = await chrome.tabs.query({ url: competitor.url });
+            // Check if the site is already open in a tab
+            const existingTabs = await chrome.tabs.query({ url: competitor.url });
             
-            if (tab) {
-                // If the site is already open in a tab, use that
-                await this.injectContentScript(tab.id, competitor);
+            if (existingTabs.length > 0) {
+                // Use existing tab
+                const existingTab = existingTabs[0];
+                console.log(`Using existing tab ${existingTab.id} for ${competitor.label}`);
+                await this.injectContentScript(existingTab.id, competitor);
             } else {
-                // Create a new tab to check the content
+                // Create a new monitoring tab
+                console.log(`Creating new monitoring tab for ${competitor.label}`);
                 await this.createMonitoringTab(competitor);
             }
+
+            console.log(`Successfully checked content for ${competitor.label}`);
 
         } catch (error) {
             console.error(`Error checking content for ${competitor.label}:`, error);
             
-            // Update competitor with error info
-            await this.storage.updateCompetitor(competitorId, {
-                lastError: error.message,
-                lastErrorTime: new Date().toISOString()
-            });
+            // Update competitor with error info but don't stop monitoring
+            try {
+                await this.storage.updateCompetitor(competitorId, {
+                    lastError: error.message,
+                    lastErrorTime: new Date().toISOString()
+                });
+            } catch (storageError) {
+                console.error('Error updating competitor error info:', storageError);
+            }
         }
     }
 
     async createMonitoringTab(competitor) {
         return new Promise((resolve, reject) => {
+            let tabClosed = false;
+            let timeoutId = null;
+            
             chrome.tabs.create({
                 url: competitor.url,
                 active: false // Don't make the tab active
@@ -286,28 +308,64 @@ class ContentSpyBackground {
                     return;
                 }
 
+                const tabId = tab.id;
+                console.log(`Created monitoring tab ${tabId} for ${competitor.label}`);
+
+                // Function to safely close the tab
+                const safeCloseTab = async () => {
+                    if (tabClosed) return;
+                    tabClosed = true;
+                    
+                    await this.safeCloseTab(tabId);
+                    
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+                };
+
                 // Wait for the tab to load
-                const checkTabReady = (tabId, changeInfo) => {
-                    if (tabId === tab.id && changeInfo.status === 'complete') {
+                const checkTabReady = async (updatedTabId, changeInfo) => {
+                    if (updatedTabId === tabId && changeInfo.status === 'complete' && !tabClosed) {
                         chrome.tabs.onUpdated.removeListener(checkTabReady);
                         
-                        // Inject content script
-                        this.injectContentScript(tab.id, competitor).then(() => {
-                            // Close the tab after checking
-                            setTimeout(() => {
-                                chrome.tabs.remove(tab.id);
-                            }, 5000);
+                        try {
+                            // Inject content script and check content
+                            await this.injectContentScript(tabId, competitor);
+                            
+                            // Close the tab after a short delay
+                            setTimeout(safeCloseTab, 3000);
                             resolve();
-                        }).catch(reject);
+                        } catch (error) {
+                            console.error(`Error processing tab ${tabId}:`, error);
+                            await safeCloseTab();
+                            reject(error);
+                        }
                     }
                 };
 
                 chrome.tabs.onUpdated.addListener(checkTabReady);
 
+                // Handle tab removal (user closed it manually)
+                const handleTabRemoved = (removedTabId) => {
+                    if (removedTabId === tabId) {
+                        tabClosed = true;
+                        chrome.tabs.onRemoved.removeListener(handleTabRemoved);
+                        chrome.tabs.onUpdated.removeListener(checkTabReady);
+                        if (timeoutId) {
+                            clearTimeout(timeoutId);
+                        }
+                        console.log(`Tab ${tabId} was removed externally`);
+                        resolve(); // Don't reject, this is fine
+                    }
+                };
+                
+                chrome.tabs.onRemoved.addListener(handleTabRemoved);
+
                 // Timeout after 30 seconds
-                setTimeout(() => {
+                timeoutId = setTimeout(async () => {
                     chrome.tabs.onUpdated.removeListener(checkTabReady);
-                    chrome.tabs.remove(tab.id);
+                    chrome.tabs.onRemoved.removeListener(handleTabRemoved);
+                    await safeCloseTab();
                     reject(new Error('Tab loading timeout'));
                 }, 30000);
             });
@@ -316,16 +374,30 @@ class ContentSpyBackground {
 
     async injectContentScript(tabId, competitor) {
         try {
-            // Don't inject - content script is already loaded via manifest
-            // Just send the message to check content
+            // First, check if the tab still exists
+            if (!(await this.tabExists(tabId))) {
+                throw new Error(`Tab ${tabId} no longer exists`);
+            }
+
+            // Send message to content script (it's already loaded via manifest)
             await chrome.tabs.sendMessage(tabId, {
                 action: 'checkContent',
                 competitor: competitor
             });
 
+            console.log(`Successfully sent content check message to tab ${tabId}`);
+
         } catch (error) {
-            console.error('Error communicating with content script:', error);
-            throw error;
+            if (error.message.includes('Could not establish connection') ||
+                error.message.includes('Receiving end does not exist') ||
+                error.message.includes('no longer exists') ||
+                error.message.includes('Extension context invalidated')) {
+                // These are expected errors when tabs are closed or content scripts aren't ready
+                console.log(`Tab ${tabId} is not ready or was closed: ${error.message}`);
+            } else {
+                console.error('Error communicating with content script:', error);
+                throw error;
+            }
         }
     }
 
@@ -400,24 +472,41 @@ class ContentSpyBackground {
 
         console.log(`Refreshing ${activeCompetitors.length} competitors`);
 
+        let successCount = 0;
+        let errorCount = 0;
+
         for (const competitor of activeCompetitors) {
-            await this.checkCompetitorContent(competitor.id);
-            
-            // Add small delay between checks to avoid overwhelming servers
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+                await this.checkCompetitorContent(competitor.id);
+                successCount++;
+                
+                // Add delay between checks to avoid overwhelming servers and browser
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            } catch (error) {
+                console.error(`Failed to refresh ${competitor.label}:`, error);
+                errorCount++;
+                
+                // Continue with other competitors even if one fails
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
+
+        console.log(`Refresh complete: ${successCount} successful, ${errorCount} errors`);
 
         // Notify that refresh is complete
         try {
             chrome.runtime.sendMessage({
-                action: 'refreshComplete'
+                action: 'refreshComplete',
+                successCount,
+                errorCount
             });
         } catch (error) {
             // Popup might not be open
+            console.log('Could not notify popup of refresh completion');
         }
 
         await this.storage.addActivity({
-            text: 'Completed refresh of all competitors',
+            text: `Refresh completed: ${successCount} successful, ${errorCount} errors`,
             type: 'refresh'
         });
     }
@@ -434,20 +523,51 @@ class ContentSpyBackground {
     }
 
     async checkIfMonitoredSite(tab) {
-        const competitors = await this.storage.getCompetitors();
-        const matchingCompetitor = competitors.find(c => {
-            try {
-                const competitorDomain = new URL(c.url).hostname;
-                const tabDomain = new URL(tab.url).hostname;
-                return competitorDomain === tabDomain;
-            } catch {
+        try {
+            const competitors = await this.storage.getCompetitors();
+            const matchingCompetitor = competitors.find(c => {
+                try {
+                    const competitorDomain = new URL(c.url).hostname;
+                    const tabDomain = new URL(tab.url).hostname;
+                    return competitorDomain === tabDomain;
+                } catch {
+                    return false;
+                }
+            });
+
+            if (matchingCompetitor) {
+                console.log(`User is on monitored site: ${matchingCompetitor.label}`);
+                // Could add page action or context menu item here
+            }
+        } catch (error) {
+            console.error('Error checking monitored site:', error);
+        }
+    }
+
+    // Helper function to safely check if a tab exists
+    async tabExists(tabId) {
+        try {
+            await chrome.tabs.get(tabId);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
+    // Helper function to safely close a tab
+    async safeCloseTab(tabId) {
+        try {
+            if (await this.tabExists(tabId)) {
+                await chrome.tabs.remove(tabId);
+                console.log(`Successfully closed tab ${tabId}`);
+                return true;
+            } else {
+                console.log(`Tab ${tabId} was already closed`);
                 return false;
             }
-        });
-
-        if (matchingCompetitor) {
-            // Optionally add a page action or context menu item
-            console.log(`User is on monitored site: ${matchingCompetitor.label}`);
+        } catch (error) {
+            console.log(`Could not close tab ${tabId}: ${error.message}`);
+            return false;
         }
     }
 }

@@ -16,9 +16,13 @@ class ContentSpyPopup {
     // Load data from Chrome storage
     async loadData() {
         try {
-            const result = await chrome.storage.sync.get(['competitors', 'recentActivity']);
-            this.competitors = result.competitors || [];
-            this.recentActivity = result.recentActivity || [];
+            // Get sync data (competitors, settings)
+            const syncResult = await chrome.storage.sync.get(['competitors', 'settings']);
+            // Get local data (activity)
+            const localResult = await chrome.storage.local.get(['recentActivity']);
+            
+            this.competitors = syncResult.competitors || [];
+            this.recentActivity = localResult.recentActivity || [];
         } catch (error) {
             console.error('Error loading data:', error);
             this.showNotification('Error loading data', 'error');
@@ -28,8 +32,13 @@ class ContentSpyPopup {
     // Save data to Chrome storage
     async saveData() {
         try {
+            // Save competitors to sync storage
             await chrome.storage.sync.set({
-                competitors: this.competitors,
+                competitors: this.competitors
+            });
+            
+            // Save activity to local storage
+            await chrome.storage.local.set({
                 recentActivity: this.recentActivity
             });
         } catch (error) {
@@ -419,10 +428,10 @@ class ContentSpyPopup {
             top: 20px;
             right: 20px;
             padding: 12px 16px;
-            background: ${type === 'error' ? '#fee2e2' : type === 'success' ? '#dcfce7' : '#e0f2fe'};
-            color: ${type === 'error' ? '#dc2626' : type === 'success' ? '#059669' : '#0369a1'};
+            background: ${type === 'error' ? '#fee2e2' : type === 'success' ? '#dcfce7' : type === 'warning' ? '#fef3c7' : '#e0f2fe'};
+            color: ${type === 'error' ? '#dc2626' : type === 'success' ? '#059669' : type === 'warning' ? '#d97706' : '#0369a1'};
             border-radius: 8px;
-            border: 1px solid ${type === 'error' ? '#fca5a5' : type === 'success' ? '#86efac' : '#7dd3fc'};
+            border: 1px solid ${type === 'error' ? '#fca5a5' : type === 'success' ? '#86efac' : type === 'warning' ? '#fcd34d' : '#7dd3fc'};
             font-size: 14px;
             font-weight: 500;
             z-index: 1000;
@@ -475,7 +484,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             popup.addActivity(`New content found: ${request.competitor}`, 'content');
         });
     } else if (request.action === 'refreshComplete') {
-        popup.showNotification('Refresh completed', 'success');
+        const message = request.successCount !== undefined 
+            ? `Refresh completed: ${request.successCount} successful, ${request.errorCount || 0} errors`
+            : 'Refresh completed';
+        popup.showNotification(message, request.errorCount > 0 ? 'warning' : 'success');
         popup.loadData().then(() => {
             popup.renderCompetitors();
         });

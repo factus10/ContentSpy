@@ -1,33 +1,76 @@
 // ContentSpy Storage Utility
 class StorageManager {
     constructor() {
-        this.storageKeys = {
+        // Sync storage - small, essential data that syncs across devices
+        this.syncKeys = {
             competitors: 'competitors',
-            settings: 'settings',
+            settings: 'settings'
+        };
+        
+        // Local storage - large data that stays on device
+        this.localKeys = {
             recentActivity: 'recentActivity',
             contentHistory: 'contentHistory',
-            analytics: 'analytics'
+            analytics: 'analytics',
+            contentFingerprints: 'contentFingerprints'
         };
     }
 
-    // Get data from storage
+    // Get data from storage (automatically chooses sync or local)
     async get(keys) {
         try {
             if (typeof keys === 'string') {
                 keys = [keys];
             }
-            const result = await chrome.storage.sync.get(keys);
-            return result;
+            
+            // Separate sync and local keys
+            const syncKeys = keys.filter(key => Object.values(this.syncKeys).includes(key));
+            const localKeys = keys.filter(key => Object.values(this.localKeys).includes(key));
+            
+            // Fetch from both storages
+            const results = {};
+            
+            if (syncKeys.length > 0) {
+                const syncResult = await chrome.storage.sync.get(syncKeys);
+                Object.assign(results, syncResult);
+            }
+            
+            if (localKeys.length > 0) {
+                const localResult = await chrome.storage.local.get(localKeys);
+                Object.assign(results, localResult);
+            }
+            
+            return results;
         } catch (error) {
             console.error('Storage get error:', error);
             throw error;
         }
     }
 
-    // Set data in storage
+    // Set data in storage (automatically chooses sync or local)
     async set(data) {
         try {
-            await chrome.storage.sync.set(data);
+            const syncData = {};
+            const localData = {};
+            
+            // Separate data based on storage type
+            Object.keys(data).forEach(key => {
+                if (Object.values(this.syncKeys).includes(key)) {
+                    syncData[key] = data[key];
+                } else {
+                    localData[key] = data[key];
+                }
+            });
+            
+            // Save to appropriate storages
+            if (Object.keys(syncData).length > 0) {
+                await chrome.storage.sync.set(syncData);
+            }
+            
+            if (Object.keys(localData).length > 0) {
+                await chrome.storage.local.set(localData);
+            }
+            
             return true;
         } catch (error) {
             console.error('Storage set error:', error);
@@ -38,7 +81,21 @@ class StorageManager {
     // Remove data from storage
     async remove(keys) {
         try {
-            await chrome.storage.sync.remove(keys);
+            if (typeof keys === 'string') {
+                keys = [keys];
+            }
+            
+            const syncKeys = keys.filter(key => Object.values(this.syncKeys).includes(key));
+            const localKeys = keys.filter(key => Object.values(this.localKeys).includes(key));
+            
+            if (syncKeys.length > 0) {
+                await chrome.storage.sync.remove(syncKeys);
+            }
+            
+            if (localKeys.length > 0) {
+                await chrome.storage.local.remove(localKeys);
+            }
+            
             return true;
         } catch (error) {
             console.error('Storage remove error:', error);
@@ -50,6 +107,7 @@ class StorageManager {
     async clear() {
         try {
             await chrome.storage.sync.clear();
+            await chrome.storage.local.clear();
             return true;
         } catch (error) {
             console.error('Storage clear error:', error);
@@ -59,13 +117,13 @@ class StorageManager {
 
     // Get all competitors
     async getCompetitors() {
-        const result = await this.get(this.storageKeys.competitors);
-        return result[this.storageKeys.competitors] || [];
+        const result = await this.get(this.syncKeys.competitors);
+        return result[this.syncKeys.competitors] || [];
     }
 
     // Save competitors
     async setCompetitors(competitors) {
-        return await this.set({ [this.storageKeys.competitors]: competitors });
+        return await this.set({ [this.syncKeys.competitors]: competitors });
     }
 
     // Add a single competitor
@@ -118,13 +176,13 @@ class StorageManager {
 
     // Get settings
     async getSettings() {
-        const result = await this.get(this.storageKeys.settings);
-        return result[this.storageKeys.settings] || this.getDefaultSettings();
+        const result = await this.get(this.syncKeys.settings);
+        return result[this.syncKeys.settings] || this.getDefaultSettings();
     }
 
     // Save settings
     async setSettings(settings) {
-        return await this.set({ [this.storageKeys.settings]: settings });
+        return await this.set({ [this.syncKeys.settings]: settings });
     }
 
     // Get default settings
@@ -154,8 +212,8 @@ class StorageManager {
 
     // Get recent activity
     async getRecentActivity() {
-        const result = await this.get(this.storageKeys.recentActivity);
-        return result[this.storageKeys.recentActivity] || [];
+        const result = await this.get(this.localKeys.recentActivity);
+        return result[this.localKeys.recentActivity] || [];
     }
 
     // Add activity entry
@@ -175,14 +233,14 @@ class StorageManager {
             activities.splice(100);
         }
 
-        await this.set({ [this.storageKeys.recentActivity]: activities });
+        await this.set({ [this.localKeys.recentActivity]: activities });
         return newActivity;
     }
 
     // Get content history
     async getContentHistory(competitorId = null, limit = null) {
-        const result = await this.get(this.storageKeys.contentHistory);
-        let contentHistory = result[this.storageKeys.contentHistory] || [];
+        const result = await this.get(this.localKeys.contentHistory);
+        let contentHistory = result[this.localKeys.contentHistory] || [];
 
         if (competitorId) {
             contentHistory = contentHistory.filter(c => c.competitorId === competitorId);
@@ -207,26 +265,26 @@ class StorageManager {
 
         contentHistory.unshift(newContent);
         
-        // Keep only last 1000 content entries
-        if (contentHistory.length > 1000) {
-            contentHistory.splice(1000);
+        // Keep only last 500 content entries (reduced from 1000)
+        if (contentHistory.length > 500) {
+            contentHistory.splice(500);
         }
 
-        await this.set({ [this.storageKeys.contentHistory]: contentHistory });
+        await this.set({ [this.localKeys.contentHistory]: contentHistory });
         return newContent;
     }
 
     // Get analytics data
     async getAnalytics() {
-        const result = await this.get(this.storageKeys.analytics);
-        return result[this.storageKeys.analytics] || {};
+        const result = await this.get(this.localKeys.analytics);
+        return result[this.localKeys.analytics] || {};
     }
 
     // Update analytics data
     async updateAnalytics(analyticsData) {
         const currentAnalytics = await this.getAnalytics();
         const updatedAnalytics = { ...currentAnalytics, ...analyticsData };
-        await this.set({ [this.storageKeys.analytics]: updatedAnalytics });
+        await this.set({ [this.localKeys.analytics]: updatedAnalytics });
         return updatedAnalytics;
     }
 
@@ -265,7 +323,8 @@ class StorageManager {
 
     // Export all data
     async exportData() {
-        const allData = await this.get(Object.values(this.storageKeys));
+        const allKeys = [...Object.values(this.syncKeys), ...Object.values(this.localKeys)];
+        const allData = await this.get(allKeys);
         return {
             ...allData,
             exportDate: new Date().toISOString(),
@@ -303,15 +362,24 @@ class StorageManager {
     // Get storage usage info
     async getStorageInfo() {
         try {
-            const usage = await chrome.storage.sync.getBytesInUse();
-            const allData = await chrome.storage.sync.get();
+            const syncUsage = await chrome.storage.sync.getBytesInUse();
+            const localUsage = await chrome.storage.local.getBytesInUse();
+            const syncData = await chrome.storage.sync.get();
+            const localData = await chrome.storage.local.get();
             
             return {
-                bytesUsed: usage,
-                maxBytes: chrome.storage.sync.QUOTA_BYTES,
-                percentUsed: Math.round((usage / chrome.storage.sync.QUOTA_BYTES) * 100),
-                itemCount: Object.keys(allData).length,
-                maxItems: chrome.storage.sync.MAX_ITEMS
+                sync: {
+                    bytesUsed: syncUsage,
+                    maxBytes: chrome.storage.sync.QUOTA_BYTES,
+                    percentUsed: Math.round((syncUsage / chrome.storage.sync.QUOTA_BYTES) * 100),
+                    itemCount: Object.keys(syncData).length
+                },
+                local: {
+                    bytesUsed: localUsage,
+                    maxBytes: chrome.storage.local.QUOTA_BYTES,
+                    percentUsed: Math.round((localUsage / chrome.storage.local.QUOTA_BYTES) * 100),
+                    itemCount: Object.keys(localData).length
+                }
             };
         } catch (error) {
             console.error('Error getting storage info:', error);
@@ -322,10 +390,30 @@ class StorageManager {
     // Listen for storage changes
     onChanged(callback) {
         chrome.storage.onChanged.addListener((changes, namespace) => {
-            if (namespace === 'sync') {
-                callback(changes);
-            }
+            callback(changes, namespace);
         });
+    }
+
+    // Content fingerprint management (using local storage)
+    async getContentFingerprints(competitorId) {
+        const key = `fingerprints_${competitorId}`;
+        const result = await chrome.storage.local.get([key]);
+        return result[key] || [];
+    }
+
+    async storeContentFingerprints(competitorId, fingerprints) {
+        const key = `fingerprints_${competitorId}`;
+        // Keep only last 200 fingerprints per competitor to manage storage
+        const limitedFingerprints = fingerprints.slice(0, 200);
+        await chrome.storage.local.set({ [key]: limitedFingerprints });
+    }
+
+    async addContentFingerprint(competitorId, fingerprint) {
+        const existing = await this.getContentFingerprints(competitorId);
+        if (!existing.includes(fingerprint)) {
+            existing.unshift(fingerprint);
+            await this.storeContentFingerprints(competitorId, existing);
+        }
     }
 }
 

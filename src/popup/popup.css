@@ -397,10 +397,18 @@ body {
     color: #dc2626 !important;
 }
 
+.text-warning {
+    color: #d97706 !important;
+}
+
 .bg-success {
     background-color: #dcfce7 !important;
 }
 
 .bg-error {
     background-color: #fee2e2 !important;
+}
+
+.bg-warning {
+    background-color: #fef3c7 !important;
 }

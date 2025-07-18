@@ -550,9 +550,9 @@ class ContentDetector {
             
             const updatedFingerprints = [...fingerprints, ...newFingerprints];
             
-            // Keep only last 1000 fingerprints to avoid storage bloat
-            if (updatedFingerprints.length > 1000) {
-                updatedFingerprints.splice(0, updatedFingerprints.length - 1000);
+            // Keep only last 200 fingerprints to manage storage efficiently
+            if (updatedFingerprints.length > 200) {
+                updatedFingerprints.splice(0, updatedFingerprints.length - 200);
             }
 
             await chrome.storage.local.set({
