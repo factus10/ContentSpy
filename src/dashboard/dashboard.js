@@ -197,6 +197,127 @@ class ContentSpyDashboard {
         }
     }
 
+    updateAnalytics() {
+        if (typeof Chart !== 'undefined') {
+            // Use Chart.js for analytics if available
+            // This would be implemented in Phase 2
+            console.log('Chart.js analytics not yet implemented');
+        } else {
+            // Use simple analytics
+            this.setupSimpleAnalytics();
+        }
+    }
+
+    setupSimpleAnalytics() {
+        this.setupFrequencyChart();
+        this.setupTypeChart();
+        this.setupTimeChart();
+        this.setupTopCompetitors();
+    }
+
+    setupFrequencyChart() {
+        const container = document.getElementById('frequencyChart');
+        if (!container) return;
+
+        // Calculate posting frequency by day of week
+        const dayFrequency = new Array(7).fill(0);
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        this.data.contentHistory.forEach(content => {
+            const date = new Date(content.timestamp);
+            dayFrequency[date.getDay()]++;
+        });
+
+        const maxFreq = Math.max(...dayFrequency, 1);
+        container.innerHTML = `
+            <div class="chart-bars">
+                ${dayFrequency.map((freq, index) => `
+                    <div class="chart-bar">
+                        <div class="bar-fill" style="height: ${(freq / maxFreq) * 100}%"></div>
+                        <div class="bar-label">${dayNames[index]}</div>
+                        <div class="bar-value">${freq}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    setupTypeChart() {
+        const container = document.getElementById('typeChart');
+        if (!container) return;
+
+        // Simple content type distribution
+        container.innerHTML = `
+            <div class="distribution-list">
+                <div class="distribution-item">
+                    <span class="distribution-label">Articles</span>
+                    <span class="distribution-value">${this.data.contentHistory.length}</span>
+                </div>
+                <div class="distribution-item">
+                    <span class="distribution-label">Active Sources</span>
+                    <span class="distribution-value">${this.data.competitors.filter(c => c.isActive).length}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    setupTimeChart() {
+        const container = document.getElementById('timeChart');
+        if (!container) return;
+
+        // Calculate hourly distribution
+        const hourFrequency = new Array(24).fill(0);
+        
+        this.data.contentHistory.forEach(content => {
+            const date = new Date(content.timestamp);
+            hourFrequency[date.getHours()]++;
+        });
+
+        const maxHourFreq = Math.max(...hourFrequency, 1);
+        const peakHour = hourFrequency.indexOf(maxHourFreq);
+        
+        container.innerHTML = `
+            <div class="time-stats">
+                <div class="time-stat">
+                    <span class="time-label">Peak Hour</span>
+                    <span class="time-value">${peakHour}:00</span>
+                </div>
+                <div class="time-stat">
+                    <span class="time-label">Peak Posts</span>
+                    <span class="time-value">${maxHourFreq}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    setupTopCompetitors() {
+        const container = document.getElementById('topicsList');
+        if (!container) return;
+
+        const competitorCounts = this.data.competitors
+            .map(competitor => ({
+                name: competitor.label,
+                count: this.data.contentHistory.filter(content => 
+                    content.competitorId === competitor.id
+                ).length
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
+        container.innerHTML = `
+            <div class="competitor-ranking">
+                ${competitorCounts.map((competitor, index) => `
+                    <div class="ranking-item">
+                        <span class="ranking-position">#${index + 1}</span>
+                        <span class="ranking-name">${competitor.name}</span>
+                        <span class="ranking-count">${competitor.count}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+
     updateStats() {
         const totalCompetitors = this.data.competitors.length;
         const totalContent = this.data.contentHistory.length;
@@ -216,9 +337,97 @@ class ContentSpyDashboard {
     }
 
     setupCharts() {
-        this.setupActivityChart();
-        this.setupCompetitorChart();
+        // Check if Chart.js is available
+        if (typeof Chart !== 'undefined') {
+            this.setupActivityChart();
+            this.setupCompetitorChart();
+        } else {
+            console.warn('Chart.js not available, using simple charts');
+            this.setupSimpleCharts();
+        }
         this.updateRecentContent();
+    }
+
+    setupSimpleCharts() {
+        this.setupSimpleActivityChart();
+        this.setupSimpleCompetitorChart();
+    }
+
+    setupSimpleActivityChart() {
+        const container = document.getElementById('activityChart');
+        if (!container) return;
+
+        // Generate last 7 days data
+        const last7Days = [];
+        const contentCounts = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const dayEnd = new Date(dayStart);
+            dayEnd.setDate(dayEnd.getDate() + 1);
+            
+            const count = this.data.contentHistory.filter(content => {
+                const contentDate = new Date(content.timestamp);
+                return contentDate >= dayStart && contentDate < dayEnd;
+            }).length;
+            
+            last7Days.push(dateStr);
+            contentCounts.push(count);
+        }
+
+        // Create simple bar chart
+        const maxCount = Math.max(...contentCounts, 1);
+        container.innerHTML = `
+            <div class="chart-bars">
+                ${last7Days.map((day, index) => `
+                    <div class="chart-bar">
+                        <div class="bar-fill" style="height: ${(contentCounts[index] / maxCount) * 100}%"></div>
+                        <div class="bar-label">${day}</div>
+                        <div class="bar-value">${contentCounts[index]}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    setupSimpleCompetitorChart() {
+        const container = document.getElementById('competitorChart');
+        if (!container) return;
+
+        // Get top 5 competitors by content count
+        const competitorCounts = this.data.competitors
+            .map(competitor => ({
+                name: competitor.label,
+                count: this.data.contentHistory.filter(content => 
+                    content.competitorId === competitor.id
+                ).length
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
+
+        if (competitorCounts.length === 0) {
+            container.innerHTML = '<p class="no-data">No competitors with content yet</p>';
+            return;
+        }
+
+        const maxCount = Math.max(...competitorCounts.map(c => c.count), 1);
+        container.innerHTML = `
+            <div class="competitor-bars">
+                ${competitorCounts.map(competitor => `
+                    <div class="competitor-bar">
+                        <div class="competitor-name">${competitor.name}</div>
+                        <div class="competitor-bar-container">
+                            <div class="competitor-bar-fill" style="width: ${(competitor.count / maxCount) * 100}%"></div>
+                            <div class="competitor-bar-value">${competitor.count}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
     }
 
     setupActivityChart() {
@@ -751,13 +960,20 @@ class ContentSpyDashboard {
     }
 
     updateCharts() {
-        if (this.charts.activity) {
-            this.charts.activity.destroy();
+        if (typeof Chart !== 'undefined') {
+            // Destroy existing Chart.js charts
+            if (this.charts.activity) {
+                this.charts.activity.destroy();
+            }
+            if (this.charts.competitor) {
+                this.charts.competitor.destroy();
+            }
+            this.setupActivityChart();
+            this.setupCompetitorChart();
+        } else {
+            // Update simple charts
+            this.setupSimpleCharts();
         }
-        if (this.charts.competitor) {
-            this.charts.competitor.destroy();
-        }
-        this.setupCharts();
     }
 
     handleBackgroundMessage(request) {
