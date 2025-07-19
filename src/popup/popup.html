@@ -3,8 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ContentSpy</title>
+    <title>ContentSpy Enhanced</title>
     <link rel="stylesheet" href="popup.css">
+    <style>
+        /* Enhanced styles for Phase 2 features */
+        .phase-indicator {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .smart-features {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .smart-features h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .feature-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .feature-btn:hover {
+            background: #f1f5f9;
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .feature-icon {
+            font-size: 20px;
+        }
+
+        .feature-label {
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .feature-desc {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .url-management {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .url-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .url-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .url-type {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .url-type.page {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .url-type.rss {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .url-type.social {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .url-text {
+            flex: 1;
+            color: #64748b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .url-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .url-action {
+            background: none;
+            border: none;
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: background 0.2s;
+        }
+
+        .url-action:hover {
+            background: #e2e8f0;
+        }
+
+        .ai-insights {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ai-insights h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-label {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .enhanced-competitor-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .enhanced-competitor-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
+        }
+
+        .competitor-header-enhanced {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .competitor-name-enhanced {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+        }
+
+        .competitor-badges {
+            display: flex;
+            gap: 4px;
+        }
+
+        .badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .badge.ai {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .badge.rss {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge.multi-url {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+
+        .competitor-stats-enhanced {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .stat-enhanced {
+            text-align: center;
+            padding: 6px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value-enhanced {
+            font-weight: 600;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .stat-label-enhanced {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .quick-actions {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .quick-actions h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #334155;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #f8fafc;
+            border-color: #cbd5e0;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .status-dot.warning {
+            background: #f59e0b;
+        }
+
+        .status-dot.error {
+            background: #ef4444;
+        }
+
+        .discovery-panel {
+            padding: 16px 20px;
+            background: #fef7ff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .discovery-panel h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .discovery-suggestion {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .suggestion-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .suggestion-title {
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .suggestion-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .analytics-summary {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .analytics-summary h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #334155;
+        }
+
+        .mini-chart {
+            background: #f8fafc;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .chart-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        .chart-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .chart-bars-mini {
+            display: flex;
+            gap: 2px;
+            height: 24px;
+            align-items: end;
+        }
+
+        .chart-bar-mini {
+            flex: 1;
+            background: #667eea;
+            border-radius: 1px;
+            min-height: 2px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -13,68 +464,257 @@
             <div class="logo">
                 <span class="logo-icon">🔍</span>
                 <h1>ContentSpy</h1>
+                <span class="phase-indicator">Phase 2</span>
             </div>
             <button class="settings-btn" id="settingsBtn" title="Open Dashboard">
                 <span>⚙️</span>
             </button>
         </header>
 
-        <!-- Add Competitor Section -->
-        <section class="add-competitor">
-            <h2>Add Competitor</h2>
-            <form id="addCompetitorForm">
-                <div class="input-group">
-                    <input 
-                        type="url" 
-                        id="competitorUrl" 
-                        placeholder="Enter competitor website URL"
-                        required
-                    >
-                    <input 
-                        type="text" 
-                        id="competitorLabel" 
-                        placeholder="Label (optional)"
-                        maxlength="50"
-                    >
+        <!-- Status Indicator -->
+        <div class="status-indicator" id="statusIndicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">System operational</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="overview">Overview</div>
+            <div class="tab" data-tab="competitors">Competitors</div>
+            <div class="tab" data-tab="insights">AI Insights</div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview-tab">
+            <!-- AI Insights Panel -->
+            <section class="ai-insights" id="aiInsightsPanel">
+                <h3>
+                    <span>🧠</span>
+                    AI Insights
+                </h3>
+                <div class="insight-item">
+                    <div class="insight-label">Top Trend</div>
+                    <div id="topTrend">Loading insights...</div>
                 </div>
-                <button type="submit" class="add-btn">
-                    <span class="btn-icon">+</span>
-                    Add Competitor
-                </button>
-            </form>
-        </section>
+                <div class="insight-item">
+                    <div class="insight-label">Content Gap</div>
+                    <div id="contentGap">Analyzing competitors...</div>
+                </div>
+            </section>
 
-        <!-- Competitors List -->
-        <section class="competitors-section">
-            <div class="section-header">
-                <h2>Tracked Competitors</h2>
-                <span class="competitor-count" id="competitorCount">0</span>
-            </div>
-            
-            <div class="competitors-list" id="competitorsList">
-                <!-- Competitors will be dynamically inserted here -->
-            </div>
+            <!-- Smart Features -->
+            <section class="smart-features">
+                <h3>
+                    <span>✨</span>
+                    Smart Features
+                </h3>
+                <div class="feature-grid">
+                    <button class="feature-btn" id="autoDiscoverBtn">
+                        <div class="feature-icon">🔍</div>
+                        <div class="feature-label">Auto-Discover</div>
+                        <div class="feature-desc">Find RSS feeds</div>
+                    </button>
+                    <button class="feature-btn" id="aiCategorizeBtn">
+                        <div class="feature-icon">🏷️</div>
+                        <div class="feature-label">AI Categorize</div>
+                        <div class="feature-desc">Smart tagging</div>
+                    </button>
+                    <button class="feature-btn" id="bulkAnalyzeBtn">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-label">Bulk Analyze</div>
+                        <div class="feature-desc">Process all</div>
+                    </button>
+                    <button class="feature-btn" id="trendDetectionBtn">
+                        <div class="feature-icon">📈</div>
+                        <div class="feature-label">Trend Detection</div>
+                        <div class="feature-desc">Find patterns</div>
+                    </button>
+                </div>
+            </section>
 
-            <div class="empty-state" id="emptyState">
-                <div class="empty-icon">📊</div>
-                <p>No competitors tracked yet</p>
-                <p class="empty-subtitle">Add your first competitor above to get started</p>
-            </div>
-        </section>
-
-        <!-- Recent Activity -->
-        <section class="recent-activity">
-            <h2>Recent Activity</h2>
-            <div class="activity-list" id="activityList">
-                <div class="activity-item">
-                    <div class="activity-icon">📝</div>
-                    <div class="activity-content">
-                        <p class="activity-text">Welcome to ContentSpy!</p>
-                        <span class="activity-time">Just now</span>
+            <!-- Analytics Summary -->
+            <section class="analytics-summary">
+                <h3>Analytics Summary</h3>
+                
+                <div class="mini-chart">
+                    <div class="chart-header">
+                        <span class="chart-title">Weekly Activity</span>
+                        <span class="chart-value" id="weeklyCount">0</span>
+                    </div>
+                    <div class="chart-bars-mini" id="weeklyChart">
+                        <!-- Mini bars will be generated here -->
                     </div>
                 </div>
-            </div>
-        </section>
+                
+                <div class="mini-chart">
+                    <div class="chart-header">
+                        <span class="chart-title">Top Category</span>
+                        <span class="chart-value" id="topCategory">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <h3>Quick Actions</h3>
+                <div class="action-grid">
+                    <button class="quick-btn" id="quickRefreshBtn">
+                        <span>🔄</span>
+                        Refresh All
+                    </button>
+                    <button class="quick-btn" id="quickDashboardBtn">
+                        <span>📊</span>
+                        Dashboard
+                    </button>
+                    <button class="quick-btn" id="quickExportBtn">
+                        <span>📤</span>
+                        Export Data
+                    </button>
+                    <button class="quick-btn" id="quickSettingsBtn">
+                        <span>⚙️</span>
+                        Settings
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Competitors Tab -->
+        <div class="tab-content" id="competitors-tab">
+            <!-- Add Competitor Section -->
+            <section class="add-competitor">
+                <h2>Add Smart Competitor</h2>
+                <form id="addCompetitorForm">
+                    <div class="input-group">
+                        <input 
+                            type="url" 
+                            id="competitorUrl" 
+                            placeholder="Enter competitor website URL"
+                            required
+                        >
+                        <input 
+                            type="text" 
+                            id="competitorLabel" 
+                            placeholder="Label (optional)"
+                            maxlength="50"
+                        >
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="autoDiscover" checked>
+                            Auto-discover feeds
+                        </label>
+                        <label style="font-size: 12px; display: flex; align-items: center; gap: 4px;">
+                            <input type="checkbox" id="enableAI" checked>
+                            AI categorization
+                        </label>
+                    </div>
+                    <button type="submit" class="add-btn">
+                        <span class="btn-icon">+</span>
+                        Add Smart Competitor
+                    </button>
+                </form>
+            </section>
+
+            <!-- Competitors List -->
+            <section class="competitors-section">
+                <div class="section-header">
+                    <h2>Smart Competitors</h2>
+                    <span class="competitor-count" id="competitorCount">0</span>
+                </div>
+                
+                <div class="competitors-list" id="competitorsList">
+                    <!-- Enhanced competitors will be dynamically inserted here -->
+                </div>
+
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon">🤖</div>
+                    <p>No smart competitors yet</p>
+                    <p class="empty-subtitle">Add your first competitor with AI-powered monitoring</p>
+                </div>
+            </section>
+
+            <!-- URL Management -->
+            <section class="url-management" id="urlManagement" style="display: none;">
+                <h3>Manage URLs</h3>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 8px;">
+                    Monitor multiple URLs per competitor
+                </p>
+                <div class="url-list" id="urlList">
+                    <!-- URL items will be populated here -->
+                </div>
+                <button class="secondary-btn" id="addUrlBtn" style="width: 100%; margin-top: 8px;">
+                    <span>+</span>
+                    Add URL
+                </button>
+            </section>
+        </div>
+
+        <!-- AI Insights Tab -->
+        <div class="tab-content" id="insights-tab">
+            <!-- Discovery Panel -->
+            <section class="discovery-panel">
+                <h3>
+                    <span>🔍</span>
+                    Smart Discovery
+                </h3>
+                <div id="discoveryResults">
+                    <div class="discovery-suggestion">
+                        <div class="suggestion-header">
+                            <span class="suggestion-title">RSS Feed Found</span>
+                            <button class="suggestion-action">Add</button>
+                        </div>
+                        <div style="font-size: 11px; color: #64748b;">
+                            blog.competitor.com/feed
+                        </div>
+                    </div>
+                    <div class="discovery-suggestion">
+                        <div class="suggestion-header">
+                            <span class="suggestion-title">Blog Section</span>
+                            <button class="suggestion-action">Add</button>
+                        </div>
+                        <div style="font-size: 11px; color: #64748b;">
+                            competitor.com/insights
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content Intelligence -->
+            <section class="recent-activity">
+                <h2>Content Intelligence</h2>
+                <div class="activity-list" id="intelligenceList">
+                    <div class="activity-item">
+                        <div class="activity-icon">🏷️</div>
+                        <div class="activity-content">
+                            <p class="activity-text">Categorized 5 new articles</p>
+                            <span class="activity-time">2 minutes ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">📈</div>
+                        <div class="activity-content">
+                            <p class="activity-text">Detected trending topic: "AI Integration"</p>
+                            <span class="activity-time">15 minutes ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🎯</div>
+                        <div class="activity-content">
+                            <p class="activity-text">Found content gap in "Case Studies"</p>
+                            <span class="activity-time">1 hour ago</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Enhanced Recent Activity -->
+            <section class="recent-activity">
+                <h2>System Activity</h2>
+                <div class="activity-list" id="activityList">
+                    <!-- Enhanced activity items -->
+                </div>
+            </section>
+        </div>
 
         <!-- Footer Actions -->
         <footer class="footer">
@@ -84,45 +724,79 @@
             </button>
             <button class="footer-btn" id="refreshBtn">
                 <span>🔄</span>
-                Refresh All
+                Smart Refresh
             </button>
         </footer>
 
         <!-- Loading Overlay -->
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-spinner"></div>
-            <p>Loading...</p>
+            <p>AI Processing...</p>
         </div>
     </div>
 
-    <!-- Templates -->
-    <template id="competitorTemplate">
-        <div class="competitor-item" data-url="">
-            <div class="competitor-info">
-                <div class="competitor-header">
-                    <span class="competitor-name"></span>
-                    <div class="competitor-actions">
-                        <button class="toggle-btn active" title="Toggle monitoring">
-                            <span class="toggle-icon">👁️</span>
-                        </button>
-                        <button class="delete-btn" title="Remove competitor">
-                            <span class="delete-icon">🗑️</span>
-                        </button>
-                    </div>
-                </div>
-                <div class="competitor-url"></div>
-                <div class="competitor-stats">
-                    <span class="stat">
-                        <span class="stat-icon">📄</span>
-                        <span class="stat-value">0</span> posts
-                    </span>
-                    <span class="stat">
-                        <span class="stat-icon">⏰</span>
-                        <span class="stat-value">Never</span>
-                    </span>
+    <!-- Enhanced Templates -->
+    <template id="enhancedCompetitorTemplate">
+        <div class="enhanced-competitor-item" data-url="">
+            <div class="competitor-header-enhanced">
+                <span class="competitor-name-enhanced"></span>
+                <div class="competitor-badges">
+                    <!-- Badges will be populated here -->
                 </div>
             </div>
+            
+            <div class="competitor-url" style="font-size: 12px; color: #64748b; margin-bottom: 8px;"></div>
+            
+            <div class="url-list">
+                <!-- Multiple URLs will be shown here -->
+            </div>
+            
+            <div class="competitor-stats-enhanced">
+                <div class="stat-enhanced">
+                    <div class="stat-value-enhanced">0</div>
+                    <div class="stat-label-enhanced">Posts</div>
+                </div>
+                <div class="stat-enhanced">
+                    <div class="stat-value-enhanced">0</div>
+                    <div class="stat-label-enhanced">URLs</div>
+                </div>
+                <div class="stat-enhanced">
+                    <div class="stat-value-enhanced">Never</div>
+                    <div class="stat-label-enhanced">Last Check</div>
+                </div>
+            </div>
+            
+            <div class="competitor-actions" style="display: flex; gap: 8px; margin-top: 8px;">
+                <button class="secondary-btn toggle-btn" style="flex: 1; font-size: 11px; padding: 6px;">
+                    <span class="toggle-icon">👁️</span>
+                    Active
+                </button>
+                <button class="secondary-btn discover-btn" style="font-size: 11px; padding: 6px;">
+                    🔍
+                </button>
+                <button class="secondary-btn manage-btn" style="font-size: 11px; padding: 6px;">
+                    ⚙️
+                </button>
+                <button class="secondary-btn delete-btn" style="font-size: 11px; padding: 6px;">
+                    🗑️
+                </button>
+            </div>
         </div>
+    </template>
+
+    <template id="urlItemTemplate">
+        <div class="url-item">
+            <span class="url-type"></span>
+            <span class="url-text"></span>
+            <div class="url-actions">
+                <button class="url-action">✏️</button>
+                <button class="url-action">🗑️</button>
+            </div>
+        </div>
+    </template>
+
+    <template id="badgeTemplate">
+        <span class="badge"></span>
     </template>
 
     <script src="popup.js"></script>

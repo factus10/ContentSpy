@@ -3,9 +3,391 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ContentSpy Dashboard</title>
+    <title>ContentSpy Enhanced Dashboard</title>
     <link rel="stylesheet" href="dashboard.css">
-    <script src="../libs/chart.min.js"></script>
+    <style>
+        /* Enhanced styles for Phase 2 features */
+        .urls-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .url-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .url-type-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .url-type-badge.page {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .url-type-badge.rss {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .url-type-badge.feed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .url-item .url-text {
+            flex: 1;
+            color: #64748b;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .url-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .content-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .category-tag {
+            padding: 2px 6px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .enhanced-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .mini-stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .mini-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .mini-stat-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .discovery-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .discovery-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .discovery-results {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .discovered-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .discovered-info {
+            flex: 1;
+        }
+
+        .discovered-title {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .discovered-url {
+            font-size: 12px;
+            color: #64748b;
+            word-break: break-all;
+        }
+
+        .content-analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .sentiment-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .sentiment-indicator.positive {
+            background: #10b981;
+        }
+
+        .sentiment-indicator.negative {
+            background: #ef4444;
+        }
+
+        .sentiment-indicator.neutral {
+            background: #6b7280;
+        }
+
+        .topic-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .topic-tag {
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .language-distribution {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .language-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .language-bar {
+            flex: 1;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 3px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+
+        .language-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .content-type-chart {
+            padding: 20px;
+        }
+
+        .type-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .type-item:last-child {
+            border-bottom: none;
+        }
+
+        .type-icon {
+            margin-right: 8px;
+        }
+
+        .enhanced-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .multi-select {
+            min-width: 150px;
+        }
+
+        .content-timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 24px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% + 4px);
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-content {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .advanced-search {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .search-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .search-rule {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .bulk-checkbox {
+            margin-right: 8px;
+        }
+
+        .ai-insights {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .ai-insights h3 {
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .insight-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .insight-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .insight-score {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard-container">
@@ -14,16 +396,25 @@
             <div class="header-content">
                 <div class="logo-section">
                     <span class="logo-icon">🔍</span>
-                    <h1>ContentSpy Dashboard</h1>
+                    <h1>ContentSpy Enhanced</h1>
+                    <span style="font-size: 12px; opacity: 0.8; margin-left: 8px;">Phase 2</span>
                 </div>
                 <div class="header-actions">
+                    <button class="header-btn" id="aiInsightsBtn">
+                        <span>🧠</span>
+                        AI Insights
+                    </button>
+                    <button class="header-btn" id="bulkActionsBtn">
+                        <span>📋</span>
+                        Bulk Actions
+                    </button>
                     <button class="header-btn" id="refreshAllBtn">
                         <span>🔄</span>
                         Refresh All
                     </button>
                     <button class="header-btn" id="exportBtn">
-                        <span>📊</span>
-                        Export Data
+                        <span>📤</span>
+                        Export
                     </button>
                     <button class="header-btn" id="settingsBtn">
                         <span>⚙️</span>
@@ -33,366 +424,698 @@
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="dashboard-main">
-            <!-- Sidebar Navigation -->
-            <nav class="sidebar">
+        <!-- Main Layout -->
+        <div class="dashboard-main">
+            <!-- Sidebar -->
+            <aside class="sidebar">
                 <ul class="nav-menu">
                     <li class="nav-item active" data-section="overview">
                         <span class="nav-icon">📊</span>
-                        Overview
+                        Enhanced Overview
                     </li>
                     <li class="nav-item" data-section="competitors">
                         <span class="nav-icon">👥</span>
-                        Competitors
+                        Smart Competitors
                     </li>
                     <li class="nav-item" data-section="content">
                         <span class="nav-icon">📝</span>
-                        Content Feed
+                        Content Intelligence
                     </li>
                     <li class="nav-item" data-section="analytics">
                         <span class="nav-icon">📈</span>
-                        Analytics
+                        Advanced Analytics
+                    </li>
+                    <li class="nav-item" data-section="discovery">
+                        <span class="nav-icon">🔍</span>
+                        Auto Discovery
+                    </li>
+                    <li class="nav-item" data-section="insights">
+                        <span class="nav-icon">🧠</span>
+                        AI Insights
                     </li>
                     <li class="nav-item" data-section="activity">
-                        <span class="nav-icon">🕒</span>
-                        Activity Log
+                        <span class="nav-icon">📋</span>
+                        Activity Timeline
                     </li>
                 </ul>
-            </nav>
+            </aside>
 
             <!-- Content Area -->
-            <div class="content-area">
-                <!-- Overview Section -->
-                <section class="content-section active" id="overview">
+            <main class="content-area">
+                <!-- Enhanced Overview Section -->
+                <section id="overview" class="content-section active">
                     <div class="section-header">
-                        <h2>Overview</h2>
-                        <p class="section-subtitle">Monitor your competitor landscape at a glance</p>
-                    </div>
-
-                    <!-- Stats Cards -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-icon">👥</div>
-                            <div class="stat-content">
-                                <h3 id="totalCompetitors">0</h3>
-                                <p>Total Competitors</p>
-                            </div>
+                        <div>
+                            <h2>Enhanced Overview</h2>
+                            <p class="section-subtitle">AI-powered competitor monitoring with advanced analytics</p>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📝</div>
-                            <div class="stat-content">
-                                <h3 id="totalContent">0</h3>
-                                <p>Content Items</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">📈</div>
-                            <div class="stat-content">
-                                <h3 id="todayContent">0</h3>
-                                <p>Today's Content</p>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon">🔄</div>
-                            <div class="stat-content">
-                                <h3 id="activeMonitoring">0</h3>
-                                <p>Active Monitoring</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Charts -->
-                    <div class="charts-grid">
-                        <div class="chart-card">
-                            <h3>Content Activity (Last 7 Days)</h3>
-                            <canvas id="activityChart"></canvas>
-                        </div>
-                        <div class="chart-card">
-                            <h3>Top Performers</h3>
-                            <canvas id="competitorChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Recent Content -->
-                    <div class="recent-content-card">
-                        <h3>Latest Content</h3>
-                        <div class="content-list" id="recentContentList">
-                            <!-- Dynamic content will be inserted here -->
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Competitors Section -->
-                <section class="content-section" id="competitors">
-                    <div class="section-header">
-                        <h2>Competitor Management</h2>
                         <button class="primary-btn" id="addCompetitorBtn">
                             <span>+</span>
                             Add Competitor
                         </button>
                     </div>
 
-                    <!-- Competitors Table -->
-                    <div class="table-card">
-                        <div class="table-header">
-                            <div class="table-controls">
-                                <input type="search" id="competitorSearch" placeholder="Search competitors...">
-                                <select id="statusFilter">
-                                    <option value="all">All Status</option>
-                                    <option value="active">Active</option>
-                                    <option value="paused">Paused</option>
-                                </select>
+                    <!-- AI Insights Banner -->
+                    <div class="ai-insights" id="aiInsightsBanner">
+                        <h3>
+                            <span>🧠</span>
+                            AI-Powered Insights
+                        </h3>
+                        <div class="insight-item">
+                            <strong>Top Trend:</strong> Your competitors are focusing 40% more on "AI integration" content this month
+                            <span class="insight-score">High Confidence</span>
+                        </div>
+                        <div class="insight-item">
+                            <strong>Content Gap:</strong> You're missing "how-to guides" that competitors publish 3x per week
+                            <span class="insight-score">Medium Confidence</span>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Stats Grid -->
+                    <div class="enhanced-stats-grid">
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="totalCompetitors">0</div>
+                            <div class="mini-stat-label">Competitors</div>
+                        </div>
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="totalUrls">0</div>
+                            <div class="mini-stat-label">Monitored URLs</div>
+                        </div>
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="totalContent">0</div>
+                            <div class="mini-stat-label">Content Items</div>
+                        </div>
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="todayContent">0</div>
+                            <div class="mini-stat-label">Today's Content</div>
+                        </div>
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="rssFeeds">0</div>
+                            <div class="mini-stat-label">RSS Feeds</div>
+                        </div>
+                        <div class="mini-stat-card">
+                            <div class="mini-stat-value" id="avgSentiment">Neutral</div>
+                            <div class="mini-stat-label">Avg Sentiment</div>
+                        </div>
+                    </div>
+
+                    <!-- Content Analysis Grid -->
+                    <div class="content-analysis-grid">
+                        <div class="chart-card">
+                            <h3>Content Categories</h3>
+                            <div class="content-type-chart" id="contentTypeChart">
+                                <!-- Dynamic content type distribution -->
                             </div>
                         </div>
+                        
+                        <div class="chart-card">
+                            <h3>Topic Cloud</h3>
+                            <div class="topic-cloud" id="topicCloud">
+                                <!-- Dynamic topic tags -->
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Language Distribution</h3>
+                            <div class="language-distribution" id="languageChart">
+                                <!-- Dynamic language distribution -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Traditional Charts Grid -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Content Activity (Last 7 Days)</h3>
+                            <div id="activityChart" class="chart-container"></div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Top Competitors</h3>
+                            <div id="competitorChart" class="chart-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Content with Enhanced Display -->
+                    <div class="recent-content-card">
+                        <h3>Recent Content Intelligence</h3>
+                        <div id="recentContentList" class="content-list">
+                            <!-- Enhanced content items with categories, sentiment, etc. -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Smart Competitors Section -->
+                <section id="competitors" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>Smart Competitors</h2>
+                            <p class="section-subtitle">Manage competitors with multiple URLs and auto-discovery</p>
+                        </div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="secondary-btn" id="discoverAllBtn">
+                                <span>🔍</span>
+                                Auto-Discover
+                            </button>
+                            <button class="primary-btn" id="addCompetitorBtn2">
+                                <span>+</span>
+                                Add Competitor
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Filters -->
+                    <div class="enhanced-filters">
+                        <div class="filter-group">
+                            <label class="filter-label">Search</label>
+                            <input type="text" id="competitorSearch" placeholder="Search competitors...">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select id="statusFilter">
+                                <option value="all">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="paused">Paused</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Content Type</label>
+                            <select id="contentTypeFilter">
+                                <option value="all">All Types</option>
+                                <option value="page">Pages</option>
+                                <option value="rss">RSS Feeds</option>
+                                <option value="social">Social</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Performance</label>
+                            <select id="performanceFilter">
+                                <option value="all">All Performance</option>
+                                <option value="high">High Activity</option>
+                                <option value="medium">Medium Activity</option>
+                                <option value="low">Low Activity</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Competitors Table -->
+                    <div class="table-card">
+                        <div class="bulk-actions" id="bulkActions" style="display: none;">
+                            <input type="checkbox" id="selectAll" class="bulk-checkbox">
+                            <span>Select All</span>
+                            <button class="secondary-btn" id="bulkEnableBtn">Enable Selected</button>
+                            <button class="secondary-btn" id="bulkDisableBtn">Disable Selected</button>
+                            <button class="danger-btn" id="bulkDeleteBtn">Delete Selected</button>
+                        </div>
+                        
                         <div class="table-wrapper">
                             <table class="competitors-table">
                                 <thead>
                                     <tr>
+                                        <th>
+                                            <input type="checkbox" id="headerCheckbox">
+                                        </th>
                                         <th>Competitor</th>
+                                        <th>URLs</th>
                                         <th>Status</th>
-                                        <th>Content Count</th>
+                                        <th>Content</th>
+                                        <th>Categories</th>
                                         <th>Last Check</th>
-                                        <th>Last Content</th>
+                                        <th>Performance</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="competitorsTableBody">
-                                    <!-- Dynamic rows will be inserted here -->
+                                    <!-- Enhanced competitor rows -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </section>
 
-                <!-- Content Feed Section -->
-                <section class="content-section" id="content">
+                <!-- Content Intelligence Section -->
+                <section id="content" class="content-section">
                     <div class="section-header">
-                        <h2>Content Feed</h2>
-                        <div class="feed-controls">
-                            <select id="contentFilter">
-                                <option value="all">All Content</option>
+                        <div>
+                            <h2>Content Intelligence</h2>
+                            <p class="section-subtitle">AI-categorized content with sentiment analysis</p>
+                        </div>
+                        <button class="primary-btn" id="advancedSearchBtn">
+                            <span>🔍</span>
+                            Advanced Search
+                        </button>
+                    </div>
+
+                    <!-- Advanced Search -->
+                    <div class="advanced-search" id="advancedSearch" style="display: none;">
+                        <h3>Advanced Content Search</h3>
+                        <div class="search-builder">
+                            <div class="search-rule">
+                                <select>
+                                    <option>Title</option>
+                                    <option>Content</option>
+                                    <option>Author</option>
+                                    <option>Category</option>
+                                </select>
+                                <select>
+                                    <option>contains</option>
+                                    <option>equals</option>
+                                    <option>starts with</option>
+                                    <option>ends with</option>
+                                </select>
+                                <input type="text" placeholder="Enter value...">
+                                <button class="secondary-btn">Remove</button>
+                            </div>
+                            <div style="display: flex; gap: 12px;">
+                                <button class="secondary-btn">Add Rule</button>
+                                <button class="primary-btn">Search</button>
+                                <button class="secondary-btn">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Content Feed -->
+                    <div class="enhanced-filters">
+                        <div class="filter-group">
+                            <label class="filter-label">Competitor</label>
+                            <select id="contentCompetitorFilter" class="multi-select">
+                                <option value="all">All Competitors</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Category</label>
+                            <select id="categoryFilter">
+                                <option value="all">All Categories</option>
+                                <option value="Product Updates">Product Updates</option>
+                                <option value="Company News">Company News</option>
+                                <option value="Industry Insights">Industry Insights</option>
+                                <option value="How-To Guides">How-To Guides</option>
+                                <option value="Case Studies">Case Studies</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Sentiment</label>
+                            <select id="sentimentFilter">
+                                <option value="all">All Sentiments</option>
+                                <option value="positive">Positive</option>
+                                <option value="neutral">Neutral</option>
+                                <option value="negative">Negative</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Date Range</label>
+                            <select id="dateRangeFilter">
+                                <option value="all">All Time</option>
                                 <option value="today">Today</option>
                                 <option value="week">This Week</option>
                                 <option value="month">This Month</option>
                             </select>
-                            <select id="competitorFilter">
-                                <option value="all">All Competitors</option>
-                                <!-- Dynamic options will be added -->
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Language</label>
+                            <select id="languageFilter">
+                                <option value="all">All Languages</option>
+                                <option value="english">English</option>
+                                <option value="spanish">Spanish</option>
+                                <option value="french">French</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="content-feed" id="contentFeed">
-                        <!-- Dynamic content items will be inserted here -->
+                    <div id="contentFeed" class="content-feed">
+                        <!-- Enhanced content items with AI analysis -->
                     </div>
                 </section>
 
-                <!-- Analytics Section -->
-                <section class="content-section" id="analytics">
+                <!-- Advanced Analytics Section -->
+                <section id="analytics" class="content-section">
                     <div class="section-header">
-                        <h2>Analytics & Insights</h2>
+                        <div>
+                            <h2>Advanced Analytics</h2>
+                            <p class="section-subtitle">Deep insights with AI-powered analysis</p>
+                        </div>
                         <div class="analytics-controls">
-                            <select id="analyticsTimeframe">
+                            <select id="analyticsTimeRange">
                                 <option value="7">Last 7 days</option>
                                 <option value="30">Last 30 days</option>
                                 <option value="90">Last 90 days</option>
                             </select>
+                            <button class="secondary-btn" id="generateReportBtn">
+                                <span>📊</span>
+                                Generate Report
+                            </button>
                         </div>
                     </div>
 
                     <div class="analytics-grid">
                         <div class="analytics-card">
-                            <h3>Publishing Frequency</h3>
-                            <canvas id="frequencyChart"></canvas>
+                            <h3>Publishing Patterns</h3>
+                            <div id="publishingPatternsChart"></div>
                         </div>
+                        
                         <div class="analytics-card">
-                            <h3>Content Types</h3>
-                            <canvas id="typeChart"></canvas>
+                            <h3>Content Performance</h3>
+                            <div id="contentPerformanceChart"></div>
                         </div>
+                        
                         <div class="analytics-card">
-                            <h3>Peak Publishing Times</h3>
-                            <canvas id="timeChart"></canvas>
+                            <h3>Competitive Gaps</h3>
+                            <div id="competitiveGapsAnalysis"></div>
                         </div>
+                        
                         <div class="analytics-card">
                             <h3>Trending Topics</h3>
-                            <div class="topics-list" id="topicsList">
-                                <!-- Dynamic topics will be inserted here -->
+                            <div id="trendingTopics"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Auto Discovery Section -->
+                <section id="discovery" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>Auto Discovery</h2>
+                            <p class="section-subtitle">Automatically find RSS feeds and content sections</p>
+                        </div>
+                    </div>
+
+                    <div class="discovery-section">
+                        <h3>RSS Feed Discovery</h3>
+                        <p>Automatically discover RSS feeds from competitor websites</p>
+                        
+                        <div class="discovery-actions">
+                            <button class="primary-btn" id="discoverFeedsBtn">
+                                <span>🔍</span>
+                                Discover RSS Feeds
+                            </button>
+                            <button class="secondary-btn" id="crawlWebsitesBtn">
+                                <span>🕷️</span>
+                                Crawl for Content Sections
+                            </button>
+                        </div>
+
+                        <div class="discovery-results" id="discoveryResults">
+                            <!-- Discovery results will appear here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Insights Section -->
+                <section id="insights" class="content-section">
+                    <div class="section-header">
+                        <div>
+                            <h2>AI Insights</h2>
+                            <p class="section-subtitle">Machine learning powered competitive intelligence</p>
+                        </div>
+                        <button class="primary-btn" id="refreshInsightsBtn">
+                            <span>🔄</span>
+                            Refresh Insights
+                        </button>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <div class="analytics-card">
+                            <h3>Content Strategy Analysis</h3>
+                            <div id="strategyAnalysis">
+                                <div class="insight-item">
+                                    <strong>Opportunity:</strong> Competitors are publishing 2x more "case studies" than you
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Trend:</strong> "AI integration" mentioned 40% more in recent content
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Gap:</strong> Missing content about "sustainability" - trending topic
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>Publishing Optimization</h3>
+                            <div id="publishingOptimization">
+                                <div class="insight-item">
+                                    <strong>Best Time:</strong> Tuesdays at 10 AM show highest engagement
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Frequency:</strong> Weekly publishing shows better results than daily
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Length:</strong> 1,200-1,500 word articles perform best
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="analytics-card">
+                            <h3>Competitive Positioning</h3>
+                            <div id="competitivePositioning">
+                                <div class="insight-item">
+                                    <strong>Leader:</strong> Competitor A dominates "technical tutorials" space
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Opportunity:</strong> "Customer success stories" under-served by competitors
+                                </div>
+                                <div class="insight-item">
+                                    <strong>Threat:</strong> Competitor B increasing content velocity by 200%
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Activity Log Section -->
-                <section class="content-section" id="activity">
+                <!-- Activity Timeline Section -->
+                <section id="activity" class="content-section">
                     <div class="section-header">
-                        <h2>Activity Log</h2>
-                        <button class="secondary-btn" id="clearActivityBtn">Clear All</button>
+                        <div>
+                            <h2>Activity Timeline</h2>
+                            <p class="section-subtitle">Chronological view of all monitoring activities</p>
+                        </div>
+                        <button class="secondary-btn" id="clearActivityBtn">
+                            <span>🗑️</span>
+                            Clear Activity
+                        </button>
                     </div>
 
-                    <div class="activity-feed" id="activityFeed">
-                        <!-- Dynamic activity items will be inserted here -->
+                    <div class="content-timeline" id="activityTimeline">
+                        <!-- Timeline items will be populated here -->
                     </div>
                 </section>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <!-- Add Competitor Modal -->
-    <div class="modal-overlay" id="addCompetitorModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Add New Competitor</h3>
-                <button class="modal-close" id="closeAddModal">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="addCompetitorForm">
-                    <div class="form-group">
-                        <label for="modalCompetitorUrl">Website URL</label>
-                        <input type="url" id="modalCompetitorUrl" required placeholder="https://example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="modalCompetitorLabel">Display Name</label>
-                        <input type="text" id="modalCompetitorLabel" placeholder="Competitor Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="modalCheckInterval">Check Interval</label>
-                        <select id="modalCheckInterval">
-                            <option value="15">Every 15 minutes</option>
-                            <option value="30" selected>Every 30 minutes</option>
-                            <option value="60">Every hour</option>
-                            <option value="120">Every 2 hours</option>
-                            <option value="360">Every 6 hours</option>
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="secondary-btn" id="cancelAddBtn">Cancel</button>
-                        <button type="submit" class="primary-btn">Add Competitor</button>
-                    </div>
-                </form>
-            </div>
+            </main>
         </div>
-    </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>Settings</h3>
-                <button class="modal-close" id="closeSettingsModal">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-sections">
-                    <div class="settings-section">
-                        <h4>Notifications</h4>
-                        <div class="setting-item">
-                            <label class="toggle-label">
-                                <input type="checkbox" id="enableNotifications" checked>
-                                <span class="toggle-slider"></span>
-                                Enable notifications
-                            </label>
+        <!-- Enhanced Modals -->
+        <!-- Add Competitor Modal (Enhanced) -->
+        <div class="modal-overlay" id="addCompetitorModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Add Smart Competitor</h3>
+                    <button class="modal-close" id="closeAddModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addCompetitorForm">
+                        <div class="form-group">
+                            <label for="modalCompetitorUrl">Primary Website URL</label>
+                            <input type="url" id="modalCompetitorUrl" required placeholder="https://competitor.com">
                         </div>
-                        <div class="setting-item">
-                            <label class="toggle-label">
-                                <input type="checkbox" id="notificationSound">
-                                <span class="toggle-slider"></span>
-                                Notification sound
-                            </label>
+                        <div class="form-group">
+                            <label for="modalCompetitorLabel">Label</label>
+                            <input type="text" id="modalCompetitorLabel" placeholder="Competitor Name">
                         </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4>Monitoring</h4>
-                        <div class="setting-item">
-                            <label for="defaultInterval">Default check interval</label>
-                            <select id="defaultInterval">
+                        <div class="form-group">
+                            <label for="modalCheckInterval">Check Interval (minutes)</label>
+                            <select id="modalCheckInterval">
                                 <option value="15">15 minutes</option>
                                 <option value="30" selected>30 minutes</option>
                                 <option value="60">1 hour</option>
+                                <option value="120">2 hours</option>
+                                <option value="360">6 hours</option>
                             </select>
                         </div>
-                    </div>
-
-                    <div class="settings-section">
-                        <h4>Data Management</h4>
-                        <div class="setting-item">
-                            <button class="secondary-btn" id="exportDataBtn">Export All Data</button>
-                            <button class="secondary-btn" id="importDataBtn">Import Data</button>
-                            <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoDiscoverFeeds" checked>
+                                Automatically discover RSS feeds
+                            </label>
                         </div>
-                        <div class="setting-item">
-                            <button class="danger-btn" id="clearAllDataBtn">Clear All Data</button>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="autoDiscoverSections" checked>
+                                Automatically discover content sections
+                            </label>
                         </div>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="secondary-btn" id="cancelSettingsBtn">Cancel</button>
-                    <button type="button" class="primary-btn" id="saveSettingsBtn">Save Settings</button>
+                        <div class="form-actions">
+                            <button type="button" class="secondary-btn" id="cancelAddBtn">Cancel</button>
+                            <button type="submit" class="primary-btn">Add Competitor</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
+
+        <!-- Settings Modal (Enhanced) -->
+        <div class="modal-overlay" id="settingsModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3>Enhanced Settings</h3>
+                    <button class="modal-close" id="closeSettingsModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="settings-sections">
+                        <div class="settings-section">
+                            <h4>Notifications</h4>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="enableNotifications">
+                                    <div class="toggle-slider"></div>
+                                    Enable notifications
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="notificationSound">
+                                    <div class="toggle-slider"></div>
+                                    Notification sound
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="aiInsights">
+                                    <div class="toggle-slider"></div>
+                                    AI insights notifications
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-section">
+                            <h4>Monitoring</h4>
+                            <div class="setting-item">
+                                <label for="defaultInterval">Default check interval (minutes)</label>
+                                <select id="defaultInterval">
+                                    <option value="15">15 minutes</option>
+                                    <option value="30">30 minutes</option>
+                                    <option value="60">1 hour</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="autoDiscovery">
+                                    <div class="toggle-slider"></div>
+                                    Auto-discover new content sources
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h4>AI & Analytics</h4>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="enableCategorization">
+                                    <div class="toggle-slider"></div>
+                                    Auto-categorize content
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="sentimentAnalysis">
+                                    <div class="toggle-slider"></div>
+                                    Sentiment analysis
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="topicExtraction">
+                                    <div class="toggle-slider"></div>
+                                    Topic extraction
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="secondary-btn" id="cancelSettingsBtn">Cancel</button>
+                        <button class="primary-btn" id="saveSettingsBtn">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+            <p>Processing with AI...</p>
+        </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-        <p>Loading...</p>
-    </div>
-
-    <!-- Templates -->
-    <template id="competitorRowTemplate">
-        <tr class="competitor-row" data-id="">
-            <td class="competitor-info">
-                <div class="competitor-name"></div>
-                <div class="competitor-url"></div>
+    <!-- Enhanced Templates -->
+    <!-- Enhanced Competitor Row Template -->
+    <template id="enhancedCompetitorRowTemplate">
+        <tr class="competitor-row">
+            <td>
+                <input type="checkbox" class="row-checkbox">
             </td>
-            <td class="status-cell">
+            <td>
+                <div class="competitor-info">
+                    <div class="competitor-name"></div>
+                    <div class="competitor-url"></div>
+                </div>
+            </td>
+            <td>
+                <div class="urls-list">
+                    <!-- URLs will be populated here -->
+                </div>
+            </td>
+            <td>
                 <span class="status-badge"></span>
             </td>
-            <td class="content-count"></td>
+            <td>
+                <div class="content-count"></div>
+                <div class="content-categories">
+                    <!-- Categories will be populated here -->
+                </div>
+            </td>
             <td class="last-check"></td>
-            <td class="last-content"></td>
+            <td>
+                <div class="performance-indicator"></div>
+            </td>
             <td class="actions-cell">
-                <button class="action-btn toggle-btn" title="Toggle monitoring">
-                    <span class="btn-icon">👁️</span>
-                </button>
-                <button class="action-btn edit-btn" title="Edit competitor">
-                    <span class="btn-icon">✏️</span>
-                </button>
-                <button class="action-btn delete-btn" title="Delete competitor">
-                    <span class="btn-icon">🗑️</span>
-                </button>
+                <button class="action-btn toggle-btn" title="Toggle monitoring">👁️</button>
+                <button class="action-btn edit-btn" title="Edit competitor">✏️</button>
+                <button class="action-btn discover-btn" title="Auto-discover">🔍</button>
+                <button class="action-btn delete-btn" title="Delete competitor">🗑️</button>
             </td>
         </tr>
     </template>
 
-    <template id="contentItemTemplate">
-        <div class="content-item" data-id="">
+    <!-- Enhanced Content Item Template -->
+    <template id="enhancedContentItemTemplate">
+        <div class="content-item">
             <div class="content-header">
                 <div class="content-meta">
                     <span class="competitor-badge"></span>
+                    <span class="category-tag"></span>
+                    <span class="sentiment-indicator"></span>
                     <span class="content-date"></span>
                 </div>
-                <div class="content-actions">
-                    <button class="content-action" title="Open in new tab">
-                        <span>🔗</span>
-                    </button>
-                </div>
+                <button class="content-action">🔗</button>
             </div>
-            <div class="content-body">
-                <h4 class="content-title"></h4>
-                <p class="content-excerpt"></p>
+            <h3 class="content-title"></h3>
+            <p class="content-excerpt"></p>
+            <div class="content-footer">
+                <div class="content-stats">
+                    <span class="stat">📖 <span class="reading-time"></span> min read</span>
+                    <span class="stat">📝 <span class="word-count"></span> words</span>
+                    <span class="stat">🌍 <span class="language"></span></span>
+                </div>
+                <div class="content-topics">
+                    <!-- Topic tags will be populated here -->
+                </div>
             </div>
         </div>
     </template>
 
-    <template id="activityItemTemplate">
-        <div class="activity-item" data-id="">
-            <div class="activity-icon"></div>
-            <div class="activity-content">
+    <!-- Enhanced Activity Item Template -->
+    <template id="enhancedActivityItemTemplate">
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <div class="timeline-date"></div>
                 <div class="activity-text"></div>
-                <div class="activity-time"></div>
+                <div class="activity-details"></div>
             </div>
         </div>
     </template>

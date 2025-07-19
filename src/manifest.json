@@ -1,41 +1,96 @@
 {
   "manifest_version": 3,
-  "name": "ContentSpy",
-  "version": "1.0.0",
-  "description": "Monitor competitor websites and social profiles for new content, analyze posting patterns, and get strategic insights.",
+  "name": "ContentSpy Enhanced",
+  "version": "2.0.0",
+  "description": "AI-powered competitor content monitoring with RSS feed discovery, multi-URL tracking, and smart categorization. Monitor competitors intelligently with automated insights.",
   "permissions": [
     "storage",
     "notifications",
     "activeTab",
     "alarms",
-    "scripting"
+    "scripting",
+    "tabs",
+    "background"
   ],
   "host_permissions": [
     "https://*/*",
     "http://*/*"
   ],
   "background": {
-    "service_worker": "background/background.js"
+    "service_worker": "background/background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content/content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ],
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "ContentSpy",
+    "default_title": "ContentSpy Enhanced - AI-Powered Competitor Monitoring",
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
   },
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "dashboard/dashboard.html",
+        "dashboard/dashboard.css",
+        "dashboard/dashboard.js",
+        "icons/*.png",
+        "utils/*.js"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_ui": {
+    "page": "dashboard/dashboard.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "refresh-all": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+R",
+        "mac": "Command+Shift+R"
+      },
+      "description": "Refresh all competitors"
+    },
+    "open-dashboard": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D",
+        "mac": "Command+Shift+D"
+      },
+      "description": "Open ContentSpy dashboard"
+    },
+    "toggle-monitoring": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+M",
+        "mac": "Command+Shift+M"
+      },
+      "description": "Toggle monitoring for all competitors"
+    }
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "minimum_chrome_version": "88",
+  "author": "ContentSpy Team",
+  "homepage_url": "https://github.com/contentspy/contentspy-extension",
+  "short_name": "ContentSpy",
+  "update_url": "https://clients2.google.com/service/update2/crx",
+  "offline_enabled": true,
+  "incognito": "split"
 }
